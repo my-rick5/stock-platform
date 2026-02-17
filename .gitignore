@@ -8,3 +8,4 @@ venv/
 
 # Spark
 checkpoints/
+.DS_Store

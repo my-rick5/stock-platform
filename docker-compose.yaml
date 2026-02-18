@@ -5,7 +5,7 @@ networks:
     driver: bridge
 
 services:
-  # 1. KAFKA (KRaft Mode - No ZooKeeper needed)
+  # 1. KAFKA (KRaft Mode)
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
@@ -17,29 +17,24 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_JMX_PORT: 9101
       KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk' # Standard local ID
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
-  # 2. QUESTDB (High-Speed Time-Series)
+  # 2. QUESTDB
   questdb:
     image: questdb/questdb:latest
     container_name: questdb
     networks:
       - macro_network
     ports:
-      - "9000:9000" # Web Console
-      - "9009:9009" # InfluxDB Line Protocol (ILP)
-      - "8812:8812" # Postgres Wire Protocol
+      - "9000:9000"
+      - "8812:8812"
     volumes:
       - ./questdb_data:/var/lib/questdb
 
-  # 3. POSTGRES (Metadata & MLflow Backend)
+  # 3. POSTGRES (MLflow Metadata)
   db:
     image: postgres:14
     container_name: mlflow_db
@@ -52,20 +47,21 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
 
-  # 4. MINIO (S3-compatible Artifact Store)
+  # 4. MINIO
   minio:
     image: minio/minio:latest
     container_name: minio
     networks:
       - macro_network
     ports:
-      - "9001:9001" # Console
+      - "9002:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: password
     command: server /data --console-address ":9001"
 
-  # 5. MLFLOW (Model Registry)
+  # 5. MLFLOW
   mlflow:
     image: ghcr.io/mlflow/mlflow:latest
     container_name: mlflow
@@ -86,3 +82,55 @@ services:
       --artifacts-destination s3://mlflow-artifacts 
       --serve-artifacts 
       --host 0.0.0.0
+
+  # 6. AIRFLOW DATABASE
+  airflow-db:
+    image: postgres:14
+    container_name: airflow_db
+    networks:
+      - macro_network
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - ./airflow_db_data:/var/lib/postgresql/data
+
+  # 7. AIRFLOW WEBSERVER
+  airflow-webserver:
+    build: .  # Uses the Dockerfile to include dbt
+    container_name: airflow_webserver
+    networks:
+      - macro_network
+    depends_on:
+      - airflow-db
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@airflow-db/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - _PIP_ADDITIONAL_DEPENDENCIES=apache-airflow-providers-amazon apache-airflow-providers-postgres
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./analytics:/opt/airflow/analytics
+    command: webserver
+
+  # 8. AIRFLOW SCHEDULER
+  airflow-scheduler:
+    build: .  # Uses the Dockerfile to include dbt
+    container_name: airflow_scheduler
+    networks:
+      - macro_network
+    depends_on:
+      - airflow-db
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@airflow-db/airflow
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - _PIP_ADDITIONAL_DEPENDENCIES=apache-airflow-providers-amazon apache-airflow-providers-postgres
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./analytics:/opt/airflow/analytics
+    command: scheduler

@@ -1,0 +1,39 @@
+[2026-02-18T16:52:21.455+0000] {taskinstance.py:1159} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: questdb_dbt_refresh.dbt_run manual__2026-02-18T16:52:19.006412+00:00 [queued]>
+[2026-02-18T16:52:21.461+0000] {taskinstance.py:1159} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: questdb_dbt_refresh.dbt_run manual__2026-02-18T16:52:19.006412+00:00 [queued]>
+[2026-02-18T16:52:21.462+0000] {taskinstance.py:1361} INFO - Starting attempt 1 of 2
+[2026-02-18T16:52:21.472+0000] {taskinstance.py:1382} INFO - Executing <Task(BashOperator): dbt_run> on 2026-02-18 16:52:19.006412+00:00
+[2026-02-18T16:52:21.481+0000] {standard_task_runner.py:57} INFO - Started process 370 to run task
+[2026-02-18T16:52:21.489+0000] {standard_task_runner.py:84} INFO - Running: ['***', 'tasks', 'run', 'questdb_dbt_refresh', 'dbt_run', 'manual__2026-02-18T16:52:19.006412+00:00', '--job-id', '55', '--raw', '--subdir', 'DAGS_FOLDER/dbt_run_dag.py', '--cfg-path', '/tmp/tmp315t6jc2']
+[2026-02-18T16:52:21.497+0000] {standard_task_runner.py:85} INFO - Job 55: Subtask dbt_run
+[2026-02-18T16:52:21.650+0000] {task_command.py:415} INFO - Running <TaskInstance: questdb_dbt_refresh.dbt_run manual__2026-02-18T16:52:19.006412+00:00 [running]> on host 5c49ecfb7225
+[2026-02-18T16:52:21.780+0000] {taskinstance.py:1660} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='questdb_dbt_refresh' AIRFLOW_CTX_TASK_ID='dbt_run' AIRFLOW_CTX_EXECUTION_DATE='2026-02-18T16:52:19.006412+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-02-18T16:52:19.006412+00:00'
+[2026-02-18T16:52:21.784+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-02-18T16:52:21.789+0000] {subprocess.py:75} INFO - Running command: ['/bin/bash', '-c', 'cd /opt/***/analytics && /home/***/.local/bin/dbt run --profiles-dir .']
+[2026-02-18T16:52:21.806+0000] {subprocess.py:86} INFO - Output:
+[2026-02-18T16:52:23.552+0000] {subprocess.py:93} INFO - [0m16:52:23  Running with dbt=1.9.0-b2
+[2026-02-18T16:52:23.861+0000] {subprocess.py:93} INFO - [0m16:52:23  Registered adapter: postgres=1.8.2
+[2026-02-18T16:52:23.992+0000] {subprocess.py:93} INFO - [0m16:52:23  Unable to do partial parsing because a project config has changed
+[2026-02-18T16:52:24.825+0000] {subprocess.py:93} INFO - [0m16:52:24  [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+[2026-02-18T16:52:24.828+0000] {subprocess.py:93} INFO - There are 1 unused configuration paths:
+[2026-02-18T16:52:24.829+0000] {subprocess.py:93} INFO - - models.analytics.example
+[2026-02-18T16:52:24.987+0000] {subprocess.py:93} INFO - [0m16:52:24  Found 1 model, 1 source, 423 macros
+[2026-02-18T16:52:24.990+0000] {subprocess.py:93} INFO - [0m16:52:24
+[2026-02-18T16:52:24.991+0000] {subprocess.py:93} INFO - [0m16:52:24  Concurrency: 1 threads (target='dev')
+[2026-02-18T16:52:24.992+0000] {subprocess.py:93} INFO - [0m16:52:24
+[2026-02-18T16:52:25.158+0000] {subprocess.py:93} INFO - [0m16:52:25
+[2026-02-18T16:52:25.160+0000] {subprocess.py:93} INFO - [0m16:52:25  Finished running  in 0 hours 0 minutes and 0.17 seconds (0.17s).
+[2026-02-18T16:52:25.162+0000] {subprocess.py:93} INFO - [0m16:52:25  Encountered an error:
+[2026-02-18T16:52:25.165+0000] {subprocess.py:93} INFO - Database Error
+[2026-02-18T16:52:25.165+0000] {subprocess.py:93} INFO -   connection to server at "127.0.0.1", port 8812 failed: Connection refused
+[2026-02-18T16:52:25.166+0000] {subprocess.py:93} INFO -   	Is the server running on that host and accepting TCP/IP connections?
+[2026-02-18T16:52:25.166+0000] {subprocess.py:93} INFO - 
+[2026-02-18T16:52:25.548+0000] {subprocess.py:97} INFO - Command exited with return code 2
+[2026-02-18T16:52:25.592+0000] {taskinstance.py:1943} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/bash.py", line 210, in execute
+    raise AirflowException(
+airflow.exceptions.AirflowException: Bash command failed. The command returned a non-zero exit code 2.
+[2026-02-18T16:52:25.604+0000] {taskinstance.py:1400} INFO - Marking task as UP_FOR_RETRY. dag_id=questdb_dbt_refresh, task_id=dbt_run, execution_date=20260218T165219, start_date=20260218T165221, end_date=20260218T165225
+[2026-02-18T16:52:25.627+0000] {standard_task_runner.py:104} ERROR - Failed to execute job 55 for task dbt_run (Bash command failed. The command returned a non-zero exit code 2.; 370)
+[2026-02-18T16:52:25.653+0000] {local_task_job_runner.py:228} INFO - Task exited with return code 1
+[2026-02-18T16:52:25.696+0000] {taskinstance.py:2784} INFO - 0 downstream tasks scheduled from follow-on schedule check

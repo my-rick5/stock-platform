@@ -1,0 +1,169 @@
+[0m16:25:12.865448 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff87924a60>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff8727d4f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff86d1d5e0>]}
+
+
+============================== 16:25:12.879850 | 953e6ad3-1c73-4916-a216-3414ca07986c ==============================
+[0m16:25:12.879850 [info ] [MainThread]: Running with dbt=1.9.0-b2
+[0m16:25:12.881510 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'debug': 'False', 'log_path': '/opt/airflow/analytics/logs', 'profiles_dir': '.', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'invocation_command': 'dbt run --profiles-dir .', 'introspect': 'True', 'static_parser': 'True', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'send_anonymous_usage_stats': 'True'}
+[0m16:25:13.078512 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '953e6ad3-1c73-4916-a216-3414ca07986c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff86b613a0>]}
+[0m16:25:13.115419 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '953e6ad3-1c73-4916-a216-3414ca07986c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff8773c940>]}
+[0m16:25:13.117221 [info ] [MainThread]: Registered adapter: postgres=1.8.2
+[0m16:25:13.132496 [debug] [MainThread]: checksum: 4cfbbe2a671212f062e88a43cba5322b30b7e3e8e91b953aa4de249eeaade60f, vars: {}, profile: , target: , version: 1.9.0b2
+[0m16:25:13.136761 [info ] [MainThread]: Unable to do partial parsing because saved manifest not found. Starting full parse.
+[0m16:25:13.138729 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': '953e6ad3-1c73-4916-a216-3414ca07986c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff88445430>]}
+[0m16:25:13.711718 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.analytics
+[0m16:25:13.720562 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '953e6ad3-1c73-4916-a216-3414ca07986c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff85cce910>]}
+[0m16:25:13.870614 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '953e6ad3-1c73-4916-a216-3414ca07986c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff85d2fc70>]}
+[0m16:25:13.872851 [info ] [MainThread]: Found 1 source, 423 macros
+[0m16:25:13.874675 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '953e6ad3-1c73-4916-a216-3414ca07986c', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff85db05b0>]}
+[0m16:25:13.876312 [warn ] [MainThread]: Nothing to do. Try checking your model configs and model specification args
+[0m16:25:13.878947 [debug] [MainThread]: Command end result
+[0m16:25:13.946287 [debug] [MainThread]: Resource report: {"command_name": "run", "command_success": true, "command_wall_clock_time": 1.1188624, "process_user_time": 1.86508, "process_kernel_time": 0.367181, "process_mem_max_rss": "93368", "process_in_blocks": "1296", "process_out_blocks": "3255"}
+[0m16:25:13.947334 [debug] [MainThread]: Command `dbt run` succeeded at 16:25:13.947251 after 1.12 seconds
+[0m16:25:13.949727 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff87924a60>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff87e7b2e0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff88b2e3a0>]}
+[0m16:25:13.951792 [debug] [MainThread]: Flushing usage events
+[0m16:25:14.149514 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:52:23.547991 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff8332eb50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff8278ed90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff8278e220>]}
+
+
+============================== 16:52:23.552393 | 0ed4714f-c53a-4016-a63c-2faffc5ee798 ==============================
+[0m16:52:23.552393 [info ] [MainThread]: Running with dbt=1.9.0-b2
+[0m16:52:23.553844 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'fail_fast': 'False', 'log_path': '/opt/airflow/analytics/logs', 'profiles_dir': '.', 'debug': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'introspect': 'True', 'log_format': 'default', 'target_path': 'None', 'invocation_command': 'dbt run --profiles-dir .', 'send_anonymous_usage_stats': 'True'}
+[0m16:52:23.814701 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '0ed4714f-c53a-4016-a63c-2faffc5ee798', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff83ec8310>]}
+[0m16:52:23.859066 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '0ed4714f-c53a-4016-a63c-2faffc5ee798', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff82b35130>]}
+[0m16:52:23.861456 [info ] [MainThread]: Registered adapter: postgres=1.8.2
+[0m16:52:23.883658 [debug] [MainThread]: checksum: 4cfbbe2a671212f062e88a43cba5322b30b7e3e8e91b953aa4de249eeaade60f, vars: {}, profile: , target: , version: 1.9.0b2
+[0m16:52:23.992607 [info ] [MainThread]: Unable to do partial parsing because a project config has changed
+[0m16:52:23.994589 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': '0ed4714f-c53a-4016-a63c-2faffc5ee798', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff82b12a30>]}
+[0m16:52:24.824603 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.analytics.example
+[0m16:52:24.845458 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '0ed4714f-c53a-4016-a63c-2faffc5ee798', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff80827310>]}
+[0m16:52:24.986043 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '0ed4714f-c53a-4016-a63c-2faffc5ee798', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff80703790>]}
+[0m16:52:24.987416 [info ] [MainThread]: Found 1 model, 1 source, 423 macros
+[0m16:52:24.989205 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '0ed4714f-c53a-4016-a63c-2faffc5ee798', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff807ed220>]}
+[0m16:52:24.990572 [info ] [MainThread]: 
+[0m16:52:24.991231 [info ] [MainThread]: Concurrency: 1 threads (target='dev')
+[0m16:52:24.992072 [info ] [MainThread]: 
+[0m16:52:24.992858 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m16:52:24.994087 [debug] [ThreadPool]: Acquiring new postgres connection 'list_qdb'
+[0m16:52:25.137552 [debug] [ThreadPool]: Using postgres connection "list_qdb"
+[0m16:52:25.140205 [debug] [ThreadPool]: On list_qdb: /* {"app": "dbt", "dbt_version": "1.9.0b2", "profile_name": "questdb_profile", "target_name": "dev", "connection_name": "list_qdb"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m16:52:25.141144 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m16:52:25.145423 [debug] [ThreadPool]: Postgres adapter: Got a retryable error when attempting to open a postgres connection.
+1 attempts remaining. Retrying in 0 seconds.
+Error:
+connection to server at "127.0.0.1", port 8812 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+[0m16:52:25.146940 [debug] [ThreadPool]: Postgres adapter: Error running SQL: /* {"app": "dbt", "dbt_version": "1.9.0b2", "profile_name": "questdb_profile", "target_name": "dev", "connection_name": "list_qdb"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m16:52:25.148094 [debug] [ThreadPool]: Postgres adapter: Rolling back transaction.
+[0m16:52:25.149002 [debug] [ThreadPool]: Postgres adapter: Error running SQL: macro list_schemas
+[0m16:52:25.150161 [debug] [ThreadPool]: Postgres adapter: Rolling back transaction.
+[0m16:52:25.150907 [debug] [ThreadPool]: On list_qdb: No close available on handle
+[0m16:52:25.155898 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m16:52:25.157407 [debug] [MainThread]: Connection 'list_qdb' was properly closed.
+[0m16:52:25.158188 [info ] [MainThread]: 
+[0m16:52:25.160097 [info ] [MainThread]: Finished running  in 0 hours 0 minutes and 0.17 seconds (0.17s).
+[0m16:52:25.162503 [error] [MainThread]: Encountered an error:
+Database Error
+  connection to server at "127.0.0.1", port 8812 failed: Connection refused
+  	Is the server running on that host and accepting TCP/IP connections?
+  
+[0m16:52:25.168103 [debug] [MainThread]: Resource report: {"command_name": "run", "command_wall_clock_time": 1.6564126, "process_user_time": 2.095354, "process_kernel_time": 1.049189, "process_mem_max_rss": "100336", "process_in_blocks": "1032", "process_out_blocks": "1592", "command_success": false}
+[0m16:52:25.169254 [debug] [MainThread]: Command `dbt run` failed at 16:52:25.169167 after 1.66 seconds
+[0m16:52:25.170181 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff8332eb50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff807ed220>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff806de460>]}
+[0m16:52:25.171148 [debug] [MainThread]: Flushing usage events
+[0m16:52:25.415099 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m16:57:28.875813 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9e1719d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9d92ac10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9d972b50>]}
+
+
+============================== 16:57:28.894746 | 953f6643-0a44-448f-98b8-656e04e2fe30 ==============================
+[0m16:57:28.894746 [info ] [MainThread]: Running with dbt=1.9.0-b2
+[0m16:57:28.900922 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'debug': 'False', 'log_path': '/opt/airflow/analytics/logs', 'profiles_dir': '.', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'empty': 'False', 'quiet': 'False', 'no_print': 'None', 'log_format': 'default', 'static_parser': 'True', 'introspect': 'True', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'target_path': 'None', 'invocation_command': 'dbt run --profiles-dir .', 'send_anonymous_usage_stats': 'True'}
+[0m16:57:29.128061 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '953f6643-0a44-448f-98b8-656e04e2fe30', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9d5cec70>]}
+[0m16:57:29.211889 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '953f6643-0a44-448f-98b8-656e04e2fe30', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9df44f40>]}
+[0m16:57:29.216115 [info ] [MainThread]: Registered adapter: postgres=1.8.2
+[0m16:57:29.257005 [debug] [MainThread]: checksum: 4cfbbe2a671212f062e88a43cba5322b30b7e3e8e91b953aa4de249eeaade60f, vars: {}, profile: , target: , version: 1.9.0b2
+[0m16:57:29.434428 [info ] [MainThread]: Unable to do partial parsing because profile has changed
+[0m16:57:29.437243 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': '953f6643-0a44-448f-98b8-656e04e2fe30', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9d9548b0>]}
+[0m16:57:31.070026 [warn ] [MainThread]: [[33mWARNING[0m]: Configuration paths exist in your dbt_project.yml file which do not apply to any resources.
+There are 1 unused configuration paths:
+- models.analytics.example
+[0m16:57:31.085195 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '953f6643-0a44-448f-98b8-656e04e2fe30', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9b4536d0>]}
+[0m16:57:31.254958 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '953f6643-0a44-448f-98b8-656e04e2fe30', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9b40b700>]}
+[0m16:57:31.257813 [info ] [MainThread]: Found 1 model, 1 source, 423 macros
+[0m16:57:31.259719 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '953f6643-0a44-448f-98b8-656e04e2fe30', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9b4360a0>]}
+[0m16:57:31.262996 [info ] [MainThread]: 
+[0m16:57:31.265685 [info ] [MainThread]: Concurrency: 1 threads (target='dev')
+[0m16:57:31.266920 [info ] [MainThread]: 
+[0m16:57:31.267910 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m16:57:31.271782 [debug] [ThreadPool]: Acquiring new postgres connection 'list_qdb'
+[0m16:57:31.523957 [debug] [ThreadPool]: Using postgres connection "list_qdb"
+[0m16:57:31.526696 [debug] [ThreadPool]: On list_qdb: /* {"app": "dbt", "dbt_version": "1.9.0b2", "profile_name": "questdb_profile", "target_name": "dev", "connection_name": "list_qdb"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m16:57:31.528690 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m16:57:32.059733 [debug] [ThreadPool]: SQL status: SELECT 2 in 0.529 seconds
+[0m16:57:32.073692 [debug] [ThreadPool]: On list_qdb: Close
+[0m16:57:32.086553 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_qdb, now list_qdb_public)
+[0m16:57:32.114889 [debug] [ThreadPool]: Using postgres connection "list_qdb_public"
+[0m16:57:32.116714 [debug] [ThreadPool]: On list_qdb_public: BEGIN
+[0m16:57:32.117567 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m16:57:32.132565 [debug] [ThreadPool]: SQL status: BEGIN in 0.015 seconds
+[0m16:57:32.135179 [debug] [ThreadPool]: Using postgres connection "list_qdb_public"
+[0m16:57:32.136860 [debug] [ThreadPool]: On list_qdb_public: /* {"app": "dbt", "dbt_version": "1.9.0b2", "profile_name": "questdb_profile", "target_name": "dev", "connection_name": "list_qdb_public"} */
+select
+      'qdb' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'public'
+    union all
+    select
+      'qdb' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'public'
+    union all
+    select
+      'qdb' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'public'
+  
+[0m16:57:32.155783 [debug] [ThreadPool]: Postgres adapter: Postgres error: table does not exist [table=pg_tables]
+LINE 7:     from pg_tables
+                 ^
+
+[0m16:57:32.158813 [debug] [ThreadPool]: On list_qdb_public: ROLLBACK
+[0m16:57:32.164121 [debug] [ThreadPool]: Postgres adapter: Error running SQL: macro list_relations_without_caching
+[0m16:57:32.167302 [debug] [ThreadPool]: Postgres adapter: Rolling back transaction.
+[0m16:57:32.170214 [debug] [ThreadPool]: On list_qdb_public: Close
+[0m16:57:32.175325 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m16:57:32.178078 [debug] [MainThread]: Connection 'list_qdb_public' was properly closed.
+[0m16:57:32.182006 [info ] [MainThread]: 
+[0m16:57:32.189457 [info ] [MainThread]: Finished running  in 0 hours 0 minutes and 0.91 seconds (0.91s).
+[0m16:57:32.192259 [error] [MainThread]: Encountered an error:
+Database Error
+  table does not exist [table=pg_tables]
+  LINE 7:     from pg_tables
+                   ^
+[0m16:57:32.197792 [debug] [MainThread]: Resource report: {"command_name": "run", "command_wall_clock_time": 3.3627684, "process_user_time": 2.918136, "process_kernel_time": 1.023777, "process_mem_max_rss": "101356", "process_out_blocks": "1594", "command_success": false, "process_in_blocks": "0"}
+[0m16:57:32.207134 [debug] [MainThread]: Command `dbt run` failed at 16:57:32.206586 after 3.37 seconds
+[0m16:57:32.212951 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9e1719d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9b40baf0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0xffff9a8b6fa0>]}
+[0m16:57:32.219122 [debug] [MainThread]: Flushing usage events
+[0m16:57:33.574887 [debug] [MainThread]: An error was encountered while trying to flush usage events

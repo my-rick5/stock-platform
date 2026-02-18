@@ -9,3 +9,7 @@ venv/
 # Spark
 checkpoints/
 .DS_Store
+**/.DS_Store
+
+postgres_data/
+questdb_data/

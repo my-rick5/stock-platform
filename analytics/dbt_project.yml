@@ -1,0 +1,25 @@
+name: 'analytics'
+version: '1.0.0'
+config-version: 2
+
+# This matches the profile name in your profiles.yml
+profile: 'questdb_profile'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Configures how models are built
+models:
+  analytics: # <--- This MUST match the 'name:' at the top
+    +materialized: table
+    # You can add folder-specific settings here
+    example:
+      +enabled: true

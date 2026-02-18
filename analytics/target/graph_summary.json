@@ -1,0 +1,1 @@
+{"_invocation_id": "953f6643-0a44-448f-98b8-656e04e2fe30", "linked": {"0": {"name": "source.analytics.questdb.nyse_ohlcv", "type": "source", "succ": [1]}, "1": {"name": "model.analytics.btcusdt_prices", "type": "model"}}}

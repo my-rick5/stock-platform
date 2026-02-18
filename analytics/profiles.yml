@@ -1,0 +1,19 @@
+questdb_profile:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: questdb
+      user: admin
+      password: quest
+      port: 8812
+      dbname: qdb
+      schema: public
+      threads: 1
+      sslmode: disable
+      # --- KEY QUESTDB SETTINGS ---
+      search_path: public
+      keepalives_idle: 0
+      connect_timeout: 5
+      # This tells dbt to stop trying to open transactions (which QuestDB doesn't use)
+      autocommit: true

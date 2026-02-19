@@ -16,9 +16,10 @@ questdb_data/
 airflow_db_data/
 
 # dbt Artifacts
-analytics/target/
-analytics/dbt_packages/
-analytics/logs/
+**/target/
+**/dbt_packages/
 
-logs/
 *.log
+logs/
+**/logs/*.log
+**/dbt.log

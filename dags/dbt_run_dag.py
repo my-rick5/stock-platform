@@ -1,27 +1,33 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
-from datetime import datetime, timedelta
-
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2026, 2, 17),
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+from datetime import datetime
 
 with DAG(
-    'questdb_dbt_refresh',
-    default_args=default_args,
-    description='Triggers dbt models for QuestDB',
-    schedule_interval=timedelta(hours=1), # Run every hour
-    catchup=False,
+    dag_id='questdb_dbt_refresh',
+    start_date=datetime(2026, 1, 1),
+    schedule_interval='@hourly', # Run every hour
+    catchup=False,               # CRITICAL: Don't run missed tasks from when the laptop was closed
+    max_active_runs=1            # Only allow one refresh at a time
 ) as dag:
 
-    # Task to run dbt
-    # Note: We use the absolute path to your analytics folder
-    run_dbt = BashOperator(
-        task_id='dbt_run',
-        # We explicitly call the dbt binary from the local user bin
-        bash_command='cd /opt/airflow/analytics && /home/airflow/.local/bin/dbt run --profiles-dir .',
+    # We use the SQL from your dbt model but run it directly
+    refresh_btc_prices = PostgresOperator(
+        task_id='refresh_btc_prices',
+        postgres_conn_id='questdb_default', # We will set this up in Airflow UI
+        sql="""
+            -- Drop if exists (QuestDB style)
+            DROP TABLE IF EXISTS btcusdt_prices;
+            
+            -- Create table as select (The core of your dbt model)
+            CREATE TABLE btcusdt_prices AS (
+                SELECT 
+                    timestamp,
+                    symbol,
+                    close,
+                    volume,
+                    final_forecast
+                FROM nyse_ohlcv
+                WHERE symbol = 'BINANCE:BTCUSDT'
+            );
+        """
     )

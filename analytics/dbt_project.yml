@@ -2,24 +2,20 @@ name: 'analytics'
 version: '1.0.0'
 config-version: 2
 
-# This matches the profile name in your profiles.yml
-profile: 'questdb_profile'
+profile: 'stock_platform_profile'
 
 model-paths: ["models"]
-analysis-paths: ["analyses"]
-test-paths: ["tests"]
-seed-paths: ["seeds"]
 macro-paths: ["macros"]
-snapshot-paths: ["snapshots"]
 
-clean-targets:
-  - "target"
-  - "dbt_packages"
+# Move this to the very bottom or very top, ensuring no indentation
+dispatch:
+  - macro_namespace: dbt
+    search_order: ['analytics', 'postgres', 'dbt'] # Added 'postgres' here explicitly
 
-# Configures how models are built
 models:
-  analytics: # <--- This MUST match the 'name:' at the top
+  analytics:
     +materialized: table
-    # You can add folder-specific settings here
-    example:
-      +enabled: true
+quoting:
+  database: false
+  schema: false
+  identifier: false    

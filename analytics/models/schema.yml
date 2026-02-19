@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: btcusdt_prices
+    description: "Bitcoin price data with AI-generated forecasts"
+    columns:
+      - name: timestamp
+        tests:
+          - not_null
+          - questdb_unique  # <--- Use our new custom test instead of 'unique'
+
+      - name: close
+        description: "Closing price (must be positive)"
+        tests:
+          - not_null
+          # Note: Standard dbt-core doesn't have a 'positive' test 
+          # out of the box without packages, but 'not_null' is your first line of defense.
+
+      - name: final_forecast
+        tests:
+          - not_null

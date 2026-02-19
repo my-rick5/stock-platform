@@ -134,3 +134,18 @@ services:
       - ./logs:/opt/airflow/logs
       - ./analytics:/opt/airflow/analytics
     command: scheduler
+  dbt:
+    build:
+      context: ./analytics
+      dockerfile: Dockerfile.dbt
+    volumes:
+      - /Users/zacharymyrick/stock-platform/analytics:/usr/app
+    working_dir: /usr/app
+    profiles: ["tools"]
+    depends_on:
+      - questdb
+    networks:
+      - default
+    environment:
+      - DBT_PROFILES_DIR=/usr/app
+      - DBT_PARTIAL_PARSE=false      

@@ -13,3 +13,12 @@ checkpoints/
 
 postgres_data/
 questdb_data/
+airflow_db_data/
+
+# dbt Artifacts
+analytics/target/
+analytics/dbt_packages/
+analytics/logs/
+
+logs/
+*.log

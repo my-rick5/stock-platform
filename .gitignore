@@ -23,3 +23,5 @@ airflow_db_data/
 logs/
 **/logs
 **/dbt.log
+
+.user.yml

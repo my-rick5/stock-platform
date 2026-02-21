@@ -48,40 +48,40 @@ services:
       - ./postgres_data:/var/lib/postgresql/data
 
   # 4. MINIO
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    networks:
-      - macro_network
-    ports:
-      - "9002:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password
-    command: server /data --console-address ":9001"
+  # minio:
+  #   image: minio/minio:latest
+  #   container_name: minio
+  #   networks:
+  #     - macro_network
+  #   ports:
+  #     - "9002:9000"
+  #     - "9001:9001"
+  #   environment:
+  #     MINIO_ROOT_USER: admin
+  #     MINIO_ROOT_PASSWORD: password
+  #   command: server /data --console-address ":9001"
 
   # 5. MLFLOW
-  mlflow:
-    image: ghcr.io/mlflow/mlflow:latest
-    container_name: mlflow
-    networks:
-      - macro_network
-    ports:
-      - "5000:5000"
-    depends_on:
-      - db
-      - minio
-    environment:
-      - AWS_ACCESS_KEY_ID=admin
-      - AWS_SECRET_ACCESS_KEY=password
-      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
-    command: >
-      mlflow server 
-      --backend-store-uri postgresql://mlflow:password@db:5432/mlflow 
-      --artifacts-destination s3://mlflow-artifacts 
-      --serve-artifacts 
-      --host 0.0.0.0
+  # mlflow:
+  #   image: ghcr.io/mlflow/mlflow:latest
+  #   container_name: mlflow
+  #   networks:
+  #     - macro_network
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - db
+  #     - minio
+  #   environment:
+  #     - AWS_ACCESS_KEY_ID=admin
+  #     - AWS_SECRET_ACCESS_KEY=password
+  #     - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+  #   command: >
+  #     mlflow server 
+  #     --backend-store-uri postgresql://mlflow:password@db:5432/mlflow 
+  #     --artifacts-destination s3://mlflow-artifacts 
+  #     --serve-artifacts 
+  #     --host 0.0.0.0
 
   # 6. AIRFLOW DATABASE
   airflow-db:
@@ -188,16 +188,12 @@ services:
   jenkins:
       image: jenkins/jenkins:lts
       container_name: jenkins
-      user: root # Required to access the docker.sock
-      ports:
-        - "8081:8080"
-        - "50000:50000"
+      user: root
       volumes:
         - jenkins_home:/var/jenkins_home
-        - /var/run/docker.sock:/var/run/docker.sock # Lets Jenkins run Docker commands
-        - /usr/bin/docker:/usr/bin/docker           # Maps the Docker binary
-      networks:
-        - macro_network
+        # Point to the REAL socket location found in your 'ls' output
+        - /Users/zacharymyrick/.docker/run/docker.sock:/var/run/docker.sock
+        - /usr/bin/docker:/usr/bin/docker
 
 volumes:
   jenkins_home: # Add this to your top-level volumes list

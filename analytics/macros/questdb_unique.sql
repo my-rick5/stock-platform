@@ -7,7 +7,7 @@ from (
         count(*) as cnt
     from {{ model }}
     group by {{ column_name }}
-)
+) AS sub
 where cnt > 1
 
 {% endtest %}

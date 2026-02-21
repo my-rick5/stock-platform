@@ -5,17 +5,24 @@ models:
     description: "Bitcoin price data with AI-generated forecasts"
     columns:
       - name: timestamp
+        description: "Designated timestamp for QuestDB"
         tests:
           - not_null
-          - questdb_unique  # <--- Use our new custom test instead of 'unique'
+          - questdb_unique  # Matches your custom test implementation
 
       - name: close
         description: "Closing price (must be positive)"
         tests:
           - not_null
-          # Note: Standard dbt-core doesn't have a 'positive' test 
-          # out of the box without packages, but 'not_null' is your first line of defense.
+          # Standard dbt test to ensure price is always > 0
+          - accepted_range:
+              min_value: 0.00000001 
 
       - name: final_forecast
+        description: "AI-generated price forecast"
         tests:
           - not_null
+      - name: btcusdt_prices
+        tests:
+          - unique:
+              column_name: "(timestamp || '-' || price)" # Simple way to check for duplicate entries

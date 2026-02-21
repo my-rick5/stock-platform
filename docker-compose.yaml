@@ -114,6 +114,7 @@ services:
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
+      - ./tests:/opt/airflow/tests
       - ./analytics:/opt/airflow/analytics
     command: webserver
 
@@ -148,4 +149,55 @@ services:
       - default
     environment:
       - DBT_PROFILES_DIR=/usr/app
-      - DBT_PARTIAL_PARSE=false      
+      - DBT_PARTIAL_PARSE=false 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8082:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+  dashboard:
+    build: 
+      context: ./dashboard
+    ports:
+      - "8501:8501"
+    networks:
+      - macro_network      
+    depends_on:
+      - questdb
+
+  jenkins:
+      image: jenkins/jenkins:lts
+      container_name: jenkins
+      user: root # Required to access the docker.sock
+      ports:
+        - "8081:8080"
+        - "50000:50000"
+      volumes:
+        - jenkins_home:/var/jenkins_home
+        - /var/run/docker.sock:/var/run/docker.sock # Lets Jenkins run Docker commands
+        - /usr/bin/docker:/usr/bin/docker           # Maps the Docker binary
+      networks:
+        - macro_network
+
+volumes:
+  jenkins_home: # Add this to your top-level volumes list

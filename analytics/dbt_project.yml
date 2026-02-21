@@ -7,15 +7,15 @@ profile: 'stock_platform_profile'
 model-paths: ["models"]
 macro-paths: ["macros"]
 
-# Move this to the very bottom or very top, ensuring no indentation
 dispatch:
   - macro_namespace: dbt
-    search_order: ['analytics', 'postgres', 'dbt'] # Added 'postgres' here explicitly
+    search_order: ['analytics', 'dbt'] # 'analytics' first ensures our overrides are used
 
 models:
   analytics:
     +materialized: table
+
 quoting:
   database: false
   schema: false
-  identifier: false    
+  identifier: false  # Fixed the spelling here

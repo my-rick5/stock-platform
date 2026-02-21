@@ -1,51 +1,52 @@
 pipeline {
     agent any
 
-    environment {
-        // Points to your QuestDB container inside the Docker network
-        DBT_PROFILES_DIR = "${WORKSPACE}/analytics"
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Static Analysis') {
             steps {
-                checkout scm
+                echo 'Checking code style...'
+                // Run flake8 inside the airflow-webserver container
+                sh "docker compose run --rm --entrypoint /bin/bash airflow-webserver -c 'pip install flake8 && flake8 dags/'"
             }
         }
 
-        stage('Build Analytics') {
+        stage('dbt Validation') {
             steps {
-                script {
-                    // Build the dbt image we just perfected
-                    sh 'docker compose build dbt'
+                echo 'Validating QuestDB Schema and Data Models...'
+                // We use the 'dbt' service defined in your docker-compose
+                sh "docker compose run --rm dbt debug"
+                sh "docker compose run --rm dbt test"
+            }
+        }
+
+        stage('Airflow Integrity') {
+            steps {
+                echo 'Verifying DAG import integrity...'
+                // Reuse the same logic we used manually earlier
+                sh "docker compose run --rm --entrypoint pytest airflow-webserver tests/test_dag_integrity.py"
+            }
+        }
+
+        stage('Python Quality Gate') {
+            steps {
+                echo 'Running logic tests...'
+                // Run pytest inside a fresh container and output the XML for Jenkins to read
+                sh "docker compose run --rm --entrypoint /bin/bash airflow-webserver -c 'pip install pytest-mock && pytest tests/ -v --junitxml=results.xml'"
+            }
+            post {
+                always {
+                    // Pull the result file back from the workspace
+                    junit 'results.xml'
                 }
             }
         }
 
-        stage('Data Quality Enforcement') {
+        stage('Deploy to Production') {
+            when { branch 'main' }
             steps {
-                script {
-                    try {
-                        // Run the tests using the flags we discovered
-                        sh 'docker compose run --rm dbt test --no-populate-cache'
-                    } catch (Exception e) {
-                        error "Data quality tests failed. Check QuestDB for anomalies."
-                    }
-                }
+                echo 'Triggering containerized deployment...'
+                sh 'chmod +x deploy.sh && ./deploy.sh'
             }
-        }
-    }
-
-    post {
-        always {
-            // Clean up stopped containers to keep the Jenkins runner clean
-            sh 'docker compose down'
-        }
-        success {
-            echo '✅ Data Quality Enforced: Bitcoin price data is valid!'
-        }
-        failure {
-            echo '❌ CI Failed: The data in QuestDB does not meet quality standards.'
         }
     }
 }

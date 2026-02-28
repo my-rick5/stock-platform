@@ -1,52 +1,67 @@
 pipeline {
     agent any
 
+    environment {
+        // Set paths to your local binaries if they aren't in Jenkins' default PATH
+        SPARK_HOME = '/opt/homebrew/opt/apache-spark/libexec'
+        PATH = "${SPARK_HOME}/bin:${PATH}"
+    }
+
     stages {
+        stage('Environment Check') {
+            steps {
+                echo '🔍 Verifying Native Infrastructure...'
+                // Check if Kafka and QuestDB are actually running before we try to test
+                sh 'nc -z localhost 9092 || (echo "Kafka is DOWN" && exit 1)'
+                sh 'nc -z localhost 8812 || (echo "QuestDB is DOWN" && exit 1)'
+            }
+        }
+
         stage('Static Analysis') {
             steps {
-                echo 'Checking code style...'
-                // Run flake8 inside the airflow-webserver container
-                sh "docker compose run --rm --entrypoint /bin/bash airflow-webserver -c 'pip install flake8 && flake8 dags/'"
+                echo '💅 Checking code style (flake8)...'
+                // Runs locally on your Mac
+                sh 'pip install flake8 --quiet'
+                sh 'flake8 scripts/*.py'
             }
         }
 
-        stage('dbt Validation') {
+        stage('Unit Tests') {
             steps {
-                echo 'Validating QuestDB Schema and Data Models...'
-                // We use the 'dbt' service defined in your docker-compose
-                sh "docker compose run --rm dbt debug"
-                sh "docker compose run --rm dbt test"
-            }
-        }
-
-        stage('Airflow Integrity') {
-            steps {
-                echo 'Verifying DAG import integrity...'
-                // Reuse the same logic we used manually earlier
-                sh "docker compose run --rm --entrypoint pytest airflow-webserver tests/test_dag_integrity.py"
-            }
-        }
-
-        stage('Python Quality Gate') {
-            steps {
-                echo 'Running logic tests...'
-                // Run pytest inside a fresh container and output the XML for Jenkins to read
-                sh "docker compose run --rm --entrypoint /bin/bash airflow-webserver -c 'pip install pytest-mock && pytest tests/ -v --junitxml=results.xml'"
+                echo '🧪 Running logic tests (pytest)...'
+                // Test your ML logic and data transformations
+                sh 'pip install pytest pytest-mock --quiet'
+                sh 'pytest tests/ -v --junitxml=results.xml'
             }
             post {
                 always {
-                    // Pull the result file back from the workspace
                     junit 'results.xml'
                 }
             }
         }
 
-        stage('Deploy to Production') {
-            when { branch 'main' }
-            steps {
-                echo 'Triggering containerized deployment...'
-                sh 'chmod +x deploy.sh && ./deploy.sh'
+        stage('Deploy Stream') {
+            when { 
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                    branch 'fix-jenkins-setup' // Added your current branch for testing
+                }
             }
+            steps {
+                echo '🚀 Launching Bare Metal Stack...'
+                // Using the root script we just moved
+                sh 'chmod +x launch_stack.sh'
+                sh './launch_stack.sh'
+            }
+        }
+    }
+    
+    post {
+        failure {
+            echo '❌ Pipeline Failed. Checking logs...'
+            // Optional: run your stop script if the deploy fails to clean up ghost processes
+            sh './stop.sh || true' 
         }
     }
 }

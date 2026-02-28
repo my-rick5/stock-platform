@@ -1,105 +1,131 @@
 import os
+import shutil
 import numpy as np
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col, window, first, last, max, min, sum
-from pyspark.sql.types import StructType, StructField, StringType, DoubleType, TimestampType
+import xgboost as xgb
+import warnings
 from statsmodels.tsa.arima.model import ARIMA
-from xgboost import XGBRegressor
+from statsmodels.tools.sm_exceptions import ConvergenceWarning
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import from_json, col, window, last, min, max, sum, current_timestamp, first
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, LongType, TimestampType
+
+# Suppress convergence noise
+warnings.simplefilter('ignore', ConvergenceWarning)
 
 # --- CONFIGURATION ---
-# Use service names if running in Docker, else 'localhost'
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "kafka:9092")
-KAFKA_TOPIC = "nyse_raw"
-DB_URL = "jdbc:postgresql://questdb:8812/qdb"
+KAFKA_BROKER = "localhost:9092"
+DB_URL = "jdbc:postgresql://localhost:8812/qdb"
 DB_USER = "admin"
 DB_PASSWORD = "quest"
+CHECKPOINT_PATH = "data/checkpoints"
 
-# Windowed storage for ML logic
+# Memory for models (5 minutes of history @ 1-second intervals)
+MAX_WINDOW_SIZE = 300 
+MIN_OBSERVATIONS = 120 
+FORECAST_HORIZON = 30  # 30 seconds into the future
+
+if os.path.exists(CHECKPOINT_PATH):
+    shutil.rmtree(CHECKPOINT_PATH)
+
 data_windows = {}
-vol_windows = {}
 
-# --- SCHEMAS ---
-read_schema = StructType([
-    StructField("symbol", StringType(), True),
-    StructField("price", DoubleType(), True),   
-    StructField("volume", DoubleType(), True),
-    StructField("timestamp", DoubleType(), True) 
+def calculate_volatility(prices):
+    if len(prices) < 10: return 0.0
+    log_returns = np.diff(np.log(prices))
+    return float(np.std(log_returns) * np.sqrt(5896800))
+
+def generate_ensemble_forecast(sym, prices):
+    if len(prices) < MIN_OBSERVATIONS:
+        return float(prices[-1]), float(prices[-1]), 0.0
+    
+    try:
+        history = np.array(prices)
+        # Smoothing with a 5-period moving average to handle 'flat' ticks
+        smoothed = np.convolve(history, np.ones(5)/5, mode='valid')
+        
+        # 1. ARIMA(2,1,0) - Industry Standard for momentum
+        # enforce_stationarity=False helps convergence on high-volatility moves
+        arima_model = ARIMA(smoothed, order=(2, 1, 0), 
+                            enforce_stationarity=False, 
+                            enforce_invertibility=False)
+        arima_result = arima_model.fit(method='innovations_mle')
+        
+        # Forecast 30 steps ahead
+        arima_preds = arima_result.forecast(steps=FORECAST_HORIZON)
+        arima_final = arima_preds[-1]
+        
+        # 2. XGBoost - Residual Error Correction
+        fitted = arima_result.fittedvalues
+        residuals = smoothed - fitted
+        
+        X = np.array([residuals[i:i+5] for i in range(len(residuals)-6)])
+        y = residuals[6:]
+        
+        regressor = xgb.XGBRegressor(n_estimators=15, max_depth=3, objective='reg:squarederror')
+        regressor.fit(X, y)
+        
+        xg_resid = regressor.predict(residuals[-5:].reshape(1, 5))[0]
+        
+        return float(arima_final + xg_resid), float(arima_final), float(xg_resid)
+    except:
+        return float(prices[-1]), float(prices[-1]), 0.0
+
+# --- SPARK SETUP ---
+spark = SparkSession.builder \
+    .appName("NYSE-Ensemble-Stream") \
+    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.13:4.1.1,org.postgresql:postgresql:42.7.5") \
+    .config("spark.driver.memory", "1g") \
+    .config("spark.executor.memory", "1g") \
+    .config("spark.sql.shuffle.partitions", "2") \
+    .master("local[2]") \
+    .getOrCreate()
+
+input_schema = StructType([
+    StructField("symbol", StringType()),
+    StructField("price", DoubleType()),
+    StructField("volume", DoubleType()),
+    StructField("event_ts", LongType()) # Matches Finnhub JSON
 ])
 
 write_schema = StructType([
-    StructField("symbol", StringType(), True),
-    StructField("open", DoubleType(), True),
-    StructField("high", DoubleType(), True),
-    StructField("low", DoubleType(), True),
-    StructField("close", DoubleType(), True),
-    StructField("volume", DoubleType(), True),
-    StructField("timestamp", TimestampType(), True),
-    StructField("realized_volatility", DoubleType(), True),
-    StructField("final_forecast", DoubleType(), True),
-    StructField("arima_pred", DoubleType(), True),
-    StructField("xgboost_resid", DoubleType(), True)
+    StructField("symbol", StringType()),
+    StructField("open", DoubleType()),
+    StructField("high", DoubleType()),
+    StructField("low", DoubleType()),
+    StructField("close", DoubleType()),
+    StructField("volume", DoubleType()),
+    StructField("event_ts", TimestampType()),     
+    StructField("processed_at", TimestampType()), 
+    StructField("realized_volatility", DoubleType()),
+    StructField("final_forecast", DoubleType()),
+    StructField("arima_pred", DoubleType()),
+    StructField("xgboost_resid", DoubleType())
 ])
 
-# --- ML LOGIC ---
-def calculate_volatility(prices):
-    if len(prices) < 2: return 0.0
-    returns = np.diff(np.log(prices))
-    return float(np.std(returns))
-
-def generate_ensemble_forecast(symbol, prices, vols):
-    if len(prices) < 10 or len(vols) < 10:
-        return float(prices[-1]), 0.0, 0.0
-    try:
-        history = [float(p) for p in prices]
-        current_vols = [float(v) for v in vols]
-        
-        arima_model = ARIMA(history, order=(5,1,0))
-        arima_fit = arima_model.fit()
-        arima_pred = arima_fit.forecast(steps=1)[0]
-
-        residuals = arima_fit.resid
-        X = np.column_stack([np.array(range(len(residuals))), np.array(current_vols)])
-        y = np.array(residuals)
-        
-        xgb_model = XGBRegressor(n_estimators=20, max_depth=3, learning_rate=0.1)
-        xgb_model.fit(X, y)
-        
-        next_features = np.array([[len(residuals), current_vols[-1]]])
-        xgboost_resid = xgb_model.predict(next_features)[0]
-
-        return float(arima_pred + xgboost_resid), float(arima_pred), float(xgboost_resid)
-    except:
-        return float(prices[-1]), 0.0, 0.0
-
-# --- BATCH PROCESSING ---
 def write_to_questdb(batch_df, batch_id):
-    # This batch now contains only ONE row per symbol per second
     rows = batch_df.collect()
-    enriched_data = []
+    if not rows: return
 
+    enriched_data = []
     for row in rows:
-        sym = row['symbol']
-        close_price = float(row['close'])
+        r = row.asDict()
+        sym = r['symbol']
+        cp = float(r['close'])
         
         if sym not in data_windows: data_windows[sym] = []
-        data_windows[sym].append(close_price)
-        if len(data_windows[sym]) > 100: data_windows[sym].pop(0)
+        data_windows[sym].append(cp)
+        if len(data_windows[sym]) > MAX_WINDOW_SIZE: data_windows[sym].pop(0)
 
         vol = round(calculate_volatility(data_windows[sym]), 6)
-        if sym not in vol_windows: vol_windows[sym] = []
-        vol_windows[sym].append(vol)
-        if len(vol_windows[sym]) > 100: vol_windows[sym].pop(0)
-
-        f, a, x = generate_ensemble_forecast(sym, data_windows[sym], vol_windows[sym])
+        f, a, x = generate_ensemble_forecast(sym, data_windows[sym])
 
         enriched_data.append({
             "symbol": str(sym),
-            "open": float(row['open']),
-            "high": float(row['high']),
-            "low": float(row['low']),
-            "close": close_price,
-            "volume": float(row['volume']),
-            "timestamp": row['timestamp'],
+            "open": float(r['open']), "high": float(r['high']),
+            "low": float(r['low']), "close": cp,
+            "volume": float(r['volume']),
+            "event_ts": r['event_ts'],
+            "processed_at": r['processed_at'], 
             "realized_volatility": vol,
             "final_forecast": float(f),
             "arima_pred": float(a),
@@ -107,66 +133,58 @@ def write_to_questdb(batch_df, batch_id):
         })
 
     if enriched_data:
-        spark_batch_df = spark.createDataFrame(enriched_data, schema=write_schema)
-        spark_batch_df.write.format("jdbc") \
-            .option("url", DB_URL).option("dbtable", "nyse_ohlcv") \
-            .option("user", DB_USER).option("password", DB_PASSWORD) \
+        spark.createDataFrame(enriched_data, schema=write_schema) \
+            .write.format("jdbc") \
+            .option("url", DB_URL) \
+            .option("dbtable", "nyse_ohlcv") \
+            .option("user", DB_USER) \
+            .option("password", DB_PASSWORD) \
             .option("driver", "org.postgresql.Driver") \
-            .mode("append").save()
-        print(f"✅ SUCCESS: Aggregated Batch {batch_id} persisted to QuestDB.")
+            .option("quoteIdentifiers", "true") \
+            .mode("append") \
+            .save()
+        print(f"✅ Batch {batch_id}: {len(enriched_data)} rows forecasted and saved.")
 
-# --- SPARK ENGINE ---
-spark = SparkSession.builder \
-    .appName("StockVolatilityEnsemble") \
-    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.postgresql:postgresql:42.7.2") \
-    .getOrCreate()
-
-spark.sparkContext.setLogLevel("WARN")
-
-# Read from Kafka
-kafka_df = spark.readStream \
+# --- STREAMING LOGIC ---
+df_raw = spark.readStream \
     .format("kafka") \
     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
-    .option("subscribe", KAFKA_TOPIC) \
+    .option("subscribe", "nyse_raw") \
     .option("startingOffsets", "latest") \
     .load()
 
-# Parse JSON and fix timestamp
-parsed_df = kafka_df.select(
-    from_json(col("value").cast("string"), read_schema).alias("data")
-).select("data.*")
+df_parsed = df_raw.select(
+    from_json(col("value").cast("string"), input_schema).alias("data")
+).select(
+    col("data.symbol"),
+    col("data.price"),
+    col("data.volume"),
+    col("data.event_ts").alias("raw_ts")
+) \
+.withColumn("event_ts", (col("raw_ts") / 1000).cast("timestamp")) \
+.withColumn("processed_at", current_timestamp())
 
-# Convert ms to timestamp and add a watermark for late data
-parsed_df = parsed_df.withColumn("timestamp", (col("timestamp") / 1000).cast("timestamp")) \
-                     .withWatermark("timestamp", "2 seconds")
-
-# --- WINDOWED AGGREGATION ---
-# This collapses hundreds of ticks into 1 OHLCV record per second
-windowed_df = parsed_df \
-    .groupBy(
-        col("symbol"),
-        window(col("timestamp"), "1 second")
-    ).agg(
+df_aggregated = df_parsed \
+    .withWatermark("event_ts", "10 seconds") \
+    .groupBy(window(col("event_ts"), "1 second"), col("symbol")) \
+    .agg(
         first("price").alias("open"),
         max("price").alias("high"),
         min("price").alias("low"),
         last("price").alias("close"),
-        sum("volume").alias("volume")
+        sum("volume").alias("volume"),
+        max("event_ts").alias("event_ts"),
+        max("processed_at").alias("processed_at")
     ).select(
-        col("symbol"),
-        col("open"),
-        col("high"),
-        col("low"),
-        col("close"),
-        col("volume"),
-        col("window.start").alias("timestamp")
+        "symbol", "open", "high", "low", "close", "volume", "event_ts", "processed_at"
     )
 
-# --- START STREAM ---
-query = windowed_df.writeStream \
+print("🚀 Starting Stream...")
+query = df_aggregated.writeStream \
     .foreachBatch(write_to_questdb) \
     .outputMode("update") \
+    .trigger(processingTime='5 seconds') \
+    .option("checkpointLocation", CHECKPOINT_PATH) \
     .start()
 
-print(f"🚀 Streaming windowed data from {KAFKA_TOPIC} to QuestDB...")
 query.awaitTermination()

@@ -1,7 +1,0 @@
-version: 2
-
-sources:
-  - name: questdb
-    schema: public
-    tables:
-      - name: nyse_ohlcv
